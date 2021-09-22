@@ -1,2 +1,1 @@
-# IQCarpet-API
 IQCarpet-API
