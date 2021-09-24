@@ -9,4 +9,14 @@ const usersController = require("./usersController");
 // * @access  Public
 router.get("/test", usersController.test);
 
+// * @route   POST http://localhost:5000/api/v1/users/registration
+// * @desc    User registration
+// * @access  Public
+router.post("/registration", usersController.registration);
+
+// * @route   POST http://localhost:5000/api/v1/users/login
+// * @desc    User login
+// * @access  Public
+router.post("/login", usersController.login);
+
 module.exports = router;
