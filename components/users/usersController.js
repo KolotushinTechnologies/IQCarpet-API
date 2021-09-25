@@ -62,6 +62,8 @@ class UsersController {
       // Second section
       const {
         fullname,
+        iAmSeller,
+        companyName,
         birthDay,
         location,
         phoneNumber,
@@ -81,21 +83,72 @@ class UsersController {
         });
       }
 
+      // Если регистрируется покупатель, то регистрируем покупателя
+      if (!iAmSeller || iAmSeller === "" || iAmSeller === null) {
+        // Находим роль "USER", которая явялется базовой для всех пользователей,
+        // чтобы присвоить ее нвоому пользователю
+        const userRoleCustomerUSER = await RoleModel.findOne({ value: "USER" });
+        // TODO: Оптимизировать
+        const userRoleCustomerCUSTOMER = await RoleModel.findOne({
+          value: "CUSTOMER",
+        });
+
+        // Создаем нового пользователя, записываем его введеный email в теле запроса,
+        // записываем базовую для всех пользователей роль, которую мы нашли в Базе Данных ролей пользователей
+        const newUserCustomer = await UserModel.create({
+          fullname: fullname,
+          iAmSeller:
+            !iAmSeller || iAmSeller === "" || iAmSeller === null ? false : true,
+          birthDay: birthDay,
+          location: location,
+          phoneNumber: phoneNumber,
+          login: login,
+          email: email,
+          password: password,
+          roles: [userRoleCustomerUSER.value, userRoleCustomerCUSTOMER.value],
+        });
+
+        // Возвращаем успешный статус с ответом от сервера и данными о пользователе
+        return res.status(200).json({
+          statusCode: 200,
+          stringStatus: "Success, OK",
+          message: {
+            serverMessage: "Добро пожаловать в IQCarpet!",
+            userData: {
+              fullname: newUserCustomer.fullname,
+              birthDay: newUserCustomer.birthDay,
+              location: newUserCustomer.location,
+              phoneNumber: newUserCustomer.phoneNumber,
+              login: newUserCustomer.login,
+              email: newUserCustomer.email,
+              roles: newUserCustomer.roles,
+            },
+          },
+        });
+      }
+
+      // Если регистрируется продавец(Компания), то регистрируем продавца(Компанию)
       // Находим роль "USER", которая явялется базовой для всех пользователей,
       // чтобы присвоить ее нвоому пользователю
-      const userRole = await RoleModel.findOne({ value: "USER" });
+      const userRoleSellerrUSER = await RoleModel.findOne({ value: "USER" });
+      // TODO: Оптимизировать
+      const userRoleSellerCUSTOMER = await RoleModel.findOne({
+        value: "SELLER",
+      });
 
       // Создаем нового пользователя, записываем его введеный email в теле запроса,
       // записываем базовую для всех пользователей роль, которую мы нашли в Базе Данных ролей пользователей
-      const newUser = await UserModel.create({
+      const newUserSeller = await UserModel.create({
         fullname: fullname,
+        iAmSeller: iAmSeller,
+        companyName: companyName,
         birthDay: birthDay,
         location: location,
         phoneNumber: phoneNumber,
         login: login,
         email: email,
         password: password,
-        roles: [userRole.value],
+        roles: [userRoleSellerrUSER.value, userRoleSellerCUSTOMER.value],
       });
 
       // Возвращаем успешный статус с ответом от сервера и данными о пользователе
@@ -105,13 +158,13 @@ class UsersController {
         message: {
           serverMessage: "Добро пожаловать в IQCarpet!",
           userData: {
-            fullname: newUser.fullname,
-            birthDay: newUser.birthDay,
-            location: newUser.location,
-            phoneNumber: newUser.phoneNumber,
-            login: newUser.login,
-            email: newUser.email,
-            roles: newUser.roles,
+            fullname: newUserSeller.fullname,
+            birthDay: newUserSeller.birthDay,
+            location: newUserSeller.location,
+            phoneNumber: newUserSeller.phoneNumber,
+            login: newUserSeller.login,
+            email: newUserSeller.email,
+            roles: newUserSeller.roles,
           },
         },
       });
@@ -135,6 +188,7 @@ class UsersController {
   async login(req, res) {
     try {
       // Получаем email и login из тела запроса
+      // TODO: Исправить поле для проверки login и email на одно поле login или username
       const { email, login, password } = req.body;
 
       // Находим пользователя по email или login из тела запроса,
